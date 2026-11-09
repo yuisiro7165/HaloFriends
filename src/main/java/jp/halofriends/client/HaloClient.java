@@ -20,7 +20,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Ultra-thin 3D halo layer: textured double-sided faces and real side walls.
+ * Front-readable game-style halo: ultra-thin extruded geometry, subtle tilt and emissive overlay.
  * Model follows the player head and never rotates to face the camera.
  * A soft aura is decorative only: it does not light nearby blocks.
  */
@@ -80,28 +80,32 @@ public final class HaloClient {
                 texture = SHIROKO_TEXTURE;
                 glowTexture = SHIROKO_GLOW;
                 model = SHIROKO_MESH;
-                width = 1.03f; height = 0.78f; thickness = 0.018f;
-                tilt = 68.0f; elevation = -0.90d;
+                width = 1.03f; height = 0.76f; thickness = 0.018f;
+                tilt = 18.0f; elevation = -0.96d;
             } else if (helmet.is(HaloFriends.HINA.get())) {
                 texture = HINA_TEXTURE;
                 glowTexture = HINA_GLOW;
                 model = HINA_MESH;
-                width = 1.34f; height = 0.87f; thickness = 0.022f;
-                tilt = 65.0f; elevation = -0.94d;
+                width = 1.30f; height = 0.85f; thickness = 0.022f;
+                tilt = 14.0f; elevation = -1.01d;
             } else if (helmet.is(HaloFriends.WAKAMO.get())) {
                 texture = WAKAMO_TEXTURE;
                 glowTexture = WAKAMO_GLOW;
                 model = WAKAMO_MESH;
-                width = 0.90f; height = 0.96f; thickness = 0.020f;
-                tilt = 48.0f; elevation = -0.99d;
+                width = 0.96f; height = 0.98f; thickness = 0.020f;
+                tilt = 11.0f; elevation = -1.07d;
             } else {
                 return;
             }
 
             pose.pushPose();
             getParentModel().head.translateAndRotate(pose);
-            pose.translate(0.0d, elevation, 0.0d);
+            // Close to the top of the head. Avoid the strongly horizontal angles of v0.5.
+            // The mesh remains in head space (no camera-facing billboarding).
+            pose.translate(0.0d, elevation, -0.03d);
             // Extruded geometry uses local z=-0.5..+0.5, so the scale sets actual thickness in blocks.
+            // 11-18 degrees from the vertical plane: front/third-person players
+            // can read the original motifs, while the shape has physical side walls.
             // Tilt remains fixed to player/head orientation, never camera-facing.
             pose.mulPose(Axis.XP.rotationDegrees(tilt));
             pose.scale(width, height, thickness);
