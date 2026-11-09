@@ -1,0 +1,44 @@
+
+name: Build Halo Friends JAR
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Get Forge Gradle wrapper
+        run: |
+          curl -fL --retry 3 -o forge-mdk.zip \
+            https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.4.28/forge-1.20.1-47.4.28-mdk.zip
+          mkdir -p _mdk
+          unzip -q forge-mdk.zip 'gradle/*' 'gradlew' 'gradlew.bat' -d _mdk
+          cp -R _mdk/gradle .
+          cp _mdk/gradlew .
+          cp _mdk/gradlew.bat .
+          chmod +x gradlew
+
+      - name: Build JAR
+        run: ./gradlew --no-daemon clean build
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: HaloFriends-JAR
+          path: build/libs/*.jar
+          if-no-files-found: error
