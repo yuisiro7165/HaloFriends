@@ -22,11 +22,11 @@ try {
     & (Join-Path $PSScriptRoot 'gradlew.bat') --no-daemon build *> (Join-Path $PSScriptRoot 'build.log')
     $ErrorActionPreference = 'Stop'
     if ($LASTEXITCODE -ne 0) { throw "Gradle build failed, exit code $LASTEXITCODE. Check build.log" }
-    $output = Join-Path $PSScriptRoot 'build\libs\HaloFriends-1.20.1-forge-0.3.0.jar'
+    $output = Join-Path $PSScriptRoot 'build\libs\HaloFriends-1.20.1-forge-0.5.0.jar'
     if (-not (Test-Path $output)) { throw "Build reported success but JAR was not found: $output" }
     New-Item -ItemType Directory -Force -Path (Join-Path $PSScriptRoot 'dist') | Out-Null
-    Copy-Item $output -Destination (Join-Path $PSScriptRoot 'dist\HaloFriends-1.20.1-forge-0.3.0.jar') -Force
-    Write-Host "Created: dist\HaloFriends-1.20.1-forge-0.3.0.jar"
+    Copy-Item $output -Destination (Join-Path $PSScriptRoot 'dist\HaloFriends-1.20.1-forge-0.5.0.jar') -Force
+    Write-Host "Created: dist\HaloFriends-1.20.1-forge-0.5.0.jar"
     exit 0
 } catch {
     $_ | Out-File -FilePath (Join-Path $PSScriptRoot 'build_errors.log') -Encoding utf8

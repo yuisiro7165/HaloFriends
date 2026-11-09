@@ -4,7 +4,7 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="halo_friends"
-version="0.4.0"
+version="0.5.0"
 displayName="Halo Friends"
 authors="Halo Friends Project"
 description="Three cosmetic halos recreated for private use with friends."

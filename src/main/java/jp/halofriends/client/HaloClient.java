@@ -20,9 +20,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * REAL 3D halo layer: pre-triangulated colored faces AND actual extruded side walls.
- * Unlike v0.3, the model is fixed in player/head space: never camera-billboarded.
- * Does not add dynamic light to surrounding blocks (full-bright vertex shading only).
+ * Ultra-thin 3D halo layer: textured double-sided faces and real side walls.
+ * Model follows the player head and never rotates to face the camera.
+ * A soft aura is decorative only: it does not light nearby blocks.
  */
 @Mod.EventBusSubscriber(modid = HaloFriends.MOD_ID,
         value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -33,6 +33,12 @@ public final class HaloClient {
             new ResourceLocation(HaloFriends.MOD_ID, "textures/entity/hina.png");
     private static final ResourceLocation WAKAMO_TEXTURE =
             new ResourceLocation(HaloFriends.MOD_ID, "textures/entity/wakamo.png");
+    private static final ResourceLocation SHIROKO_GLOW =
+            new ResourceLocation(HaloFriends.MOD_ID, "textures/entity/shiroko_glow.png");
+    private static final ResourceLocation HINA_GLOW =
+            new ResourceLocation(HaloFriends.MOD_ID, "textures/entity/hina_glow.png");
+    private static final ResourceLocation WAKAMO_GLOW =
+            new ResourceLocation(HaloFriends.MOD_ID, "textures/entity/wakamo_glow.png");
     private static final ResourceLocation WHITE_TEXTURE =
             new ResourceLocation(HaloFriends.MOD_ID, "textures/entity/white.png");
 
@@ -65,25 +71,29 @@ public final class HaloClient {
                            float partialTick, float age, float headYaw, float headPitch) {
             ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
             ResourceLocation texture;
+            ResourceLocation glowTexture;
             HaloMesh3D model;
             float width, height, thickness, tilt;
             double elevation;
 
             if (helmet.is(HaloFriends.SHIROKO.get())) {
                 texture = SHIROKO_TEXTURE;
+                glowTexture = SHIROKO_GLOW;
                 model = SHIROKO_MESH;
-                width = 1.03f; height = 0.78f; thickness = 0.085f;
-                tilt = 60.0f; elevation = -0.92d;
+                width = 1.03f; height = 0.78f; thickness = 0.018f;
+                tilt = 68.0f; elevation = -0.90d;
             } else if (helmet.is(HaloFriends.HINA.get())) {
                 texture = HINA_TEXTURE;
+                glowTexture = HINA_GLOW;
                 model = HINA_MESH;
-                width = 1.34f; height = 0.87f; thickness = 0.10f;
-                tilt = 57.0f; elevation = -0.94d;
+                width = 1.34f; height = 0.87f; thickness = 0.022f;
+                tilt = 65.0f; elevation = -0.94d;
             } else if (helmet.is(HaloFriends.WAKAMO.get())) {
                 texture = WAKAMO_TEXTURE;
+                glowTexture = WAKAMO_GLOW;
                 model = WAKAMO_MESH;
-                width = 0.90f; height = 0.96f; thickness = 0.08f;
-                tilt = 35.0f; elevation = -1.02d;
+                width = 0.90f; height = 0.96f; thickness = 0.020f;
+                tilt = 48.0f; elevation = -0.99d;
             } else {
                 return;
             }
@@ -91,7 +101,8 @@ public final class HaloClient {
             pose.pushPose();
             getParentModel().head.translateAndRotate(pose);
             pose.translate(0.0d, elevation, 0.0d);
-            // Tilt the REAL solid model above the head. Player rotation, NOT camera rotation.
+            // Extruded geometry uses local z=-0.5..+0.5, so the scale sets actual thickness in blocks.
+            // Tilt remains fixed to player/head orientation, never camera-facing.
             pose.mulPose(Axis.XP.rotationDegrees(tilt));
             pose.scale(width, height, thickness);
 
@@ -99,6 +110,11 @@ public final class HaloClient {
             model.renderFrontBack(pose, surfaces);
             VertexConsumer sides = buffers.getBuffer(RenderType.entityTranslucent(WHITE_TEXTURE));
             model.renderWalls(pose, sides);
+
+            // A separate blurred silhouette provides a gentle game-like aura without thick geometry.
+            // This is a transparent overlay on BOTH faces, not a camera-facing billboard.
+            VertexConsumer glow = buffers.getBuffer(RenderType.entityTranslucent(glowTexture));
+            HaloGlow.render(pose, glow);
             pose.popPose();
         }
     }

@@ -9,5 +9,5 @@ if errorlevel 1 (
   exit /b 1
 )
 echo.
-echo BUILD SUCCESS - See dist\HaloFriends-1.20.1-forge-0.3.0.jar
+echo BUILD SUCCESS - See dist\HaloFriends-1.20.1-forge-0.5.0.jar
 pause
