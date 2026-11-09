@@ -67,18 +67,33 @@ public final class HaloMesh3D {
     }
 
     void renderFrontBack(PoseStack pose, VertexConsumer consumer) {
-        renderQuads(pose, consumer, faces);
+        renderQuads(pose, consumer, faces, 1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    void renderFrontBack(PoseStack pose, VertexConsumer consumer,
+                         float rMul, float gMul, float bMul, float aMul) {
+        renderQuads(pose, consumer, faces, rMul, gMul, bMul, aMul);
     }
 
     void renderWalls(PoseStack pose, VertexConsumer consumer) {
-        renderQuads(pose, consumer, walls);
+        renderQuads(pose, consumer, walls, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    private static void renderQuads(PoseStack pose, VertexConsumer consumer, Vertex[][] quads) {
+    void renderWalls(PoseStack pose, VertexConsumer consumer,
+                     float rMul, float gMul, float bMul, float aMul) {
+        renderQuads(pose, consumer, walls, rMul, gMul, bMul, aMul);
+    }
+
+    private static void renderQuads(PoseStack pose, VertexConsumer consumer, Vertex[][] quads,
+                                    float rMul, float gMul, float bMul, float aMul) {
         for (Vertex[] quad : quads) {
             for (Vertex v : quad) {
+                int r = clamp255(v.r(), rMul);
+                int g = clamp255(v.g(), gMul);
+                int b = clamp255(v.b(), bMul);
+                int a = clamp255(v.a(), aMul);
                 consumer.vertex(pose.last().pose(), v.x(), v.y(), v.z())
-                        .color(v.r(), v.g(), v.b(), v.a())
+                        .color(r, g, b, a)
                         .uv(v.u(), v.v())
                         .overlayCoords(OverlayTexture.NO_OVERLAY)
                         .uv2(LightTexture.FULL_BRIGHT)
@@ -86,5 +101,9 @@ public final class HaloMesh3D {
                         .endVertex();
             }
         }
+    }
+
+    private static int clamp255(int value, float mul) {
+        return Math.max(0, Math.min(255, Math.round(value * mul)));
     }
 }

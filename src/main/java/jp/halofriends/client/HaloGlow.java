@@ -6,33 +6,35 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 
 /**
- * Subtle texture-based corona around a real 3D silhouette.
+ * Soft full-bright aura around a real 3D silhouette.
  * Both sides are rendered in HEAD space, never in camera/billboard space.
- * The halo is full-bright but intentionally does NOT illuminate the world.
  */
 final class HaloGlow {
-    private static final float FRONT_Z = 0.53f;
-    private static final float BACK_Z = -0.53f;
-
     private HaloGlow() { }
 
     static void render(PoseStack pose, VertexConsumer consumer) {
-        // Front quad (+Z normal), back quad (-Z normal).
-        vertex(pose, consumer, -0.5f, -0.5f, FRONT_Z, 0.0f, 1.0f, 1.0f);
-        vertex(pose, consumer,  0.5f, -0.5f, FRONT_Z, 1.0f, 1.0f, 1.0f);
-        vertex(pose, consumer,  0.5f,  0.5f, FRONT_Z, 1.0f, 0.0f, 1.0f);
-        vertex(pose, consumer, -0.5f,  0.5f, FRONT_Z, 0.0f, 0.0f, 1.0f);
+        render(pose, consumer, 1.0f, 0.56f);
+    }
 
-        vertex(pose, consumer,  0.5f, -0.5f, BACK_Z, 1.0f, 1.0f, -1.0f);
-        vertex(pose, consumer, -0.5f, -0.5f, BACK_Z, 0.0f, 1.0f, -1.0f);
-        vertex(pose, consumer, -0.5f,  0.5f, BACK_Z, 0.0f, 0.0f, -1.0f);
-        vertex(pose, consumer,  0.5f,  0.5f, BACK_Z, 1.0f, 0.0f, -1.0f);
+    static void render(PoseStack pose, VertexConsumer consumer, float alphaMul, float zExtent) {
+        int alpha = Math.max(0, Math.min(255, Math.round(255.0f * alphaMul)));
+        // Front quad (+Z normal), back quad (-Z normal).
+        vertex(pose, consumer, -0.5f, -0.5f,  zExtent, 0.0f, 1.0f, 1.0f, alpha);
+        vertex(pose, consumer,  0.5f, -0.5f,  zExtent, 1.0f, 1.0f, 1.0f, alpha);
+        vertex(pose, consumer,  0.5f,  0.5f,  zExtent, 1.0f, 0.0f, 1.0f, alpha);
+        vertex(pose, consumer, -0.5f,  0.5f,  zExtent, 0.0f, 0.0f, 1.0f, alpha);
+
+        vertex(pose, consumer,  0.5f, -0.5f, -zExtent, 1.0f, 1.0f, -1.0f, alpha);
+        vertex(pose, consumer, -0.5f, -0.5f, -zExtent, 0.0f, 1.0f, -1.0f, alpha);
+        vertex(pose, consumer, -0.5f,  0.5f, -zExtent, 0.0f, 0.0f, -1.0f, alpha);
+        vertex(pose, consumer,  0.5f,  0.5f, -zExtent, 1.0f, 0.0f, -1.0f, alpha);
     }
 
     private static void vertex(PoseStack pose, VertexConsumer consumer,
-                               float x, float y, float z, float u, float v, float normalZ) {
+                               float x, float y, float z, float u, float v,
+                               float normalZ, int alpha) {
         consumer.vertex(pose.last().pose(), x, y, z)
-                .color(255, 255, 255, 255)
+                .color(255, 255, 255, alpha)
                 .uv(u, v)
                 .overlayCoords(OverlayTexture.NO_OVERLAY)
                 .uv2(LightTexture.FULL_BRIGHT)
