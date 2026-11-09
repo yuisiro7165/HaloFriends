@@ -1,0 +1,55 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+version = '0.3.0'
+group = 'jp.halofriends'
+base { archivesName = 'HaloFriends-1.20.1-forge' }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+    copyIdeResources = true
+    runs {
+        client {
+            workingDirectory project.file('run')
+            mods { halo_friends { source sourceSets.main } }
+        }
+        server {
+            workingDirectory project.file('run')
+            args '--nogui'
+            mods { halo_friends { source sourceSets.main } }
+        }
+    }
+}
+
+repositories {
+    // Forge's Maven repositories are configured by ForgeGradle.
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.28'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+            'Specification-Title': 'halo_friends',
+            'Specification-Vendor': 'Halo Friends',
+            'Specification-Version': '1',
+            'Implementation-Title': 'HaloFriends',
+            'Implementation-Version': project.version,
+            'Implementation-Vendor': 'Halo Friends'
+        ])
+    }
+    // Forge 1.20.1 production runtime requires this remapping step.
+    finalizedBy 'reobfJar'
+}
